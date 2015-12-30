@@ -8,7 +8,8 @@ import (
 )
 
 var (
-	err error
+	config Config
+	err    error
 )
 
 func main() {
