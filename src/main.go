@@ -14,6 +14,9 @@ var (
 
 func main() {
 
+	// Start api server.
+	go startApiServer()
+
 	// Exit main loop
 	sig := make(chan os.Signal)
 	signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
