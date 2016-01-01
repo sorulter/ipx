@@ -10,6 +10,7 @@ dependencies:
 	@printf "\e[33;47m Update Dependencies \e[0m\r\n"
 	@go get github.com/gocubes/config
 	@go get github.com/lessos/lessgo/logger
+	@go get github.com/shadowsocks/shadowsocks-go/shadowsocks
 
 current:
 	@printf "\e[34m Build Current OS Binary \e[0m\r\n"
