@@ -69,6 +69,10 @@ func newHttpServer(uid uint64, port uint16) (ok bool, err error) {
 
 }
 
+func stop(uid uint64) {
+	proxyManager.del(uid)
+}
+
 func (pm *ProxydManager) add(uid uint64, listener net.Listener, conn net.Conn) {
 	pm.Lock()
 	pm.proxy[uid] = &Proxy{conn, listener}
