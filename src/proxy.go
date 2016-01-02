@@ -27,7 +27,7 @@ func init() {
 			proxy.Logger.Fatal("create shadowsocks cipher:", err)
 			return nil, err
 		}
-		c, err = ss.Dial(addr, config.ParentServer.HostAndPort, cipher.Copy())
+		c, err = dial(addr, config.ParentServer.HostAndPort, cipher.Copy(), 121)
 		if err != nil {
 			proxy.Logger.Fatalf("can't connect to shadowsocks parent %s for %s: %v\n",
 				config.ParentServer.HostAndPort, addr, err)
