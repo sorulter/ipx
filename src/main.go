@@ -26,6 +26,11 @@ forever:
 		select {
 		case s := <-sig:
 			fmt.Printf("\nSignal (%d) received, stopping\n", s)
+			for uid, _ := range proxyManager.proxy {
+				fmt.Printf("Stop connection of user %d\n", uid)
+				proxyManager.del(uid)
+
+			}
 			break forever
 		}
 	}
