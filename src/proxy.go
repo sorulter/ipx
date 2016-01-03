@@ -12,7 +12,7 @@ import (
 )
 
 type Proxy struct {
-	conn     net.Conn
+	conns    []net.Conn
 	listener net.Listener
 }
 
@@ -28,13 +28,13 @@ var (
 func newHttpServer(uid uint64, port uint16) (ok bool, err error) {
 	// proxy
 	proxy := goproxy.NewProxyHttpServer()
-	proxy.Verbose = true
+	// proxy.Verbose = true
 	proxy.Tr.Dial = func(network, addr string) (conn net.Conn, err error) {
 		// use existed conn
-		prx, ok := proxyManager.get(uid)
-		if !ok {
-			return prx.conn, nil
-		}
+		// prx, ok := proxyManager.get(uid)
+		// if !ok {
+		// 	return prx.conn, nil
+		// }
 
 		// new conn
 		cipher, err := ss.NewCipher(config.ParentServer.Method, config.ParentServer.Key)
@@ -49,7 +49,7 @@ func newHttpServer(uid uint64, port uint16) (ok bool, err error) {
 			return nil, err
 		}
 		fmt.Println("Dial to parent", conn)
-		proxyManager.updateConn(uid, conn)
+		go proxyManager.addConn(uid, conn)
 
 		return
 	}
@@ -60,7 +60,7 @@ func newHttpServer(uid uint64, port uint16) (ok bool, err error) {
 		return ok, errors.New(fmt.Sprintf("Listen new http server port(%d) error: %s", port, err.Error()))
 
 	}
-	proxyManager.add(uid, listener, nil)
+	go proxyManager.add(uid, listener, nil)
 	server := http.Server{
 		Handler: proxy,
 	}
@@ -75,18 +75,13 @@ func stop(uid uint64) {
 
 func (pm *ProxydManager) add(uid uint64, listener net.Listener, conn net.Conn) {
 	pm.Lock()
-	pm.proxy[uid] = &Proxy{conn, listener}
+	pm.proxy[uid] = &Proxy{nil, listener}
 	pm.Unlock()
+	pm.addConn(uid, conn)
 }
 
-func (pm *ProxydManager) updateConn(uid uint64, conn net.Conn) {
-	pm.Lock()
-	if pm.proxy[uid].conn != nil {
-		pm.proxy[uid].conn.Close()
-	}
-	pm.proxy[uid].conn = conn
-	pm.Unlock()
-
+func (pm *ProxydManager) addConn(uid uint64, conn net.Conn) {
+	pm.proxy[uid].conns = append(pm.proxy[uid].conns, conn)
 }
 
 func (pm *ProxydManager) get(uid uint64) (prx *Proxy, ok bool) {
@@ -98,8 +93,10 @@ func (pm *ProxydManager) get(uid uint64) (prx *Proxy, ok bool) {
 
 func (pm *ProxydManager) del(uid uint64) {
 	if prx, ok := pm.get(uid); ok {
-		if prx.conn != nil {
-			prx.conn.Close()
+		if len(prx.conns) > 0 {
+			for _, conn := range prx.conns {
+				conn.Close()
+			}
 		}
 		prx.listener.Close()
 		pm.Lock()
