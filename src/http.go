@@ -18,3 +18,6 @@ type HttpServer struct {
 var (
 	hasPort = regexp.MustCompile(`:\d+$`)
 )
+
+func (h *HttpServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+}
