@@ -32,4 +32,3 @@ func NewHttpServer(uid uint64) *HttpServer {
 			Proxy: http.ProxyFromEnvironment},
 	}
 }
-}
