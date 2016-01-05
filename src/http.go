@@ -20,6 +20,7 @@ var (
 )
 
 func (h *HttpServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+}
 
 func NewHttpServer(uid uint64) *HttpServer {
 	return &HttpServer{
