@@ -2,7 +2,6 @@ package main
 
 import (
 	"net"
-	"time"
 
 	ss "github.com/shadowsocks/shadowsocks-go/shadowsocks"
 )
