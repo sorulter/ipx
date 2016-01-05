@@ -98,3 +98,58 @@ func (h *HttpServer) copyAndClose(w, r net.Conn) {
 		log.Printf("Error closing: %s", err)
 	}
 }
+
+func (h *HttpServer) handleHttp(w http.ResponseWriter, r *http.Request) {
+	if !r.URL.IsAbs() {
+		h.NotFoundHandler.ServeHTTP(w, r)
+		return
+	}
+
+	removeProxyHeaders(r)
+
+	resp, err := h.Tr.RoundTrip(r)
+	if err != nil {
+		w.WriteHeader(500)
+		w.Write([]byte(err.Error()))
+		return
+	}
+	copyHeaders(w.Header(), resp.Header)
+	w.WriteHeader(resp.StatusCode)
+
+	io.Copy(w, resp.Body)
+	if err := resp.Body.Close(); err != nil {
+		log.Printf("Can't close response body %v", err)
+	}
+}
+
+func removeProxyHeaders(r *http.Request) {
+	r.RequestURI = "" // this must be reset when serving a request with the client
+	// If no Accept-Encoding header exists, Transport will add the headers it can accept
+	// and would wrap the response body with the relevant reader.
+	r.Header.Del("Accept-Encoding")
+	// curl can add that, see
+	// http://homepage.ntlworld.com/jonathan.deboynepollard/FGA/web-proxy-connection-header.html
+	r.Header.Del("Proxy-Connection")
+	r.Header.Del("Proxy-Authenticate")
+	r.Header.Del("Proxy-Authorization")
+	// Connection, Authenticate and Authorization are single hop Header:
+	// http://www.w3.org/Protocols/rfc2616/rfc2616.txt
+	// 14.10 Connection
+	//   The Connection general-header field allows the sender to specify
+	//   options that are desired for that particular connection and MUST NOT
+	//   be communicated by proxies over further connections.
+	r.Header.Del("Connection")
+}
+
+func copyHeaders(dst, src http.Header) (n int) {
+	for k, _ := range dst {
+		dst.Del(k)
+	}
+	for k, vs := range src {
+		for _, v := range vs {
+			n += len(k) + len(v)
+			dst.Add(k, v)
+		}
+	}
+	return
+}
