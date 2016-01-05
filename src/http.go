@@ -141,13 +141,13 @@ func removeProxyHeaders(r *http.Request) {
 	r.Header.Del("Connection")
 }
 
-func copyHeaders(dst, src http.Header) (n int) {
+func copyHeaders(dst, src http.Header) (n int64) {
 	for k, _ := range dst {
 		dst.Del(k)
 	}
 	for k, vs := range src {
 		for _, v := range vs {
-			n += len(k) + len(v)
+			n += int64(len(k) + len(v))
 			dst.Add(k, v)
 		}
 	}
