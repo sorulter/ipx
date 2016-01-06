@@ -14,6 +14,7 @@ type HttpServer struct {
 	NotFoundHandler http.Handler
 	Tr              *http.Transport
 	ConnectDial     func(network string, addr string) (net.Conn, error)
+	Counter         func(uid uint64, bytes int64)
 }
 
 var (
@@ -29,8 +30,8 @@ func NewHttpServer(uid uint64) *HttpServer {
 		NotFoundHandler: http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 			http.Error(w, "Illegal requests.", 500)
 		}),
-		Tr: &http.Transport{
-			Proxy: http.ProxyFromEnvironment},
+		Tr:      &http.Transport{Proxy: http.ProxyFromEnvironment},
+		Counter: func(uid uint64, bytes int64) {},
 	}
 }
 
@@ -93,6 +94,7 @@ func (h *HttpServer) copyAndClose(w, r net.Conn) {
 		connOk = false
 		log.Printf("Error copying to client: %s, %d bytes", err, n)
 	}
+	go h.Counter(h.Uid, n)
 
 	if err := r.Close(); err != nil && connOk {
 		log.Printf("Error closing: %s", err)
@@ -113,13 +115,14 @@ func (h *HttpServer) handleHttp(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(err.Error()))
 		return
 	}
-	copyHeaders(w.Header(), resp.Header)
+	nh := copyHeaders(w.Header(), resp.Header)
 	w.WriteHeader(resp.StatusCode)
 
-	io.Copy(w, resp.Body)
+	nr, _ := io.Copy(w, resp.Body)
 	if err := resp.Body.Close(); err != nil {
 		log.Printf("Can't close response body %v", err)
 	}
+	go h.Counter(h.Uid, nr+nh)
 }
 
 func removeProxyHeaders(r *http.Request) {
