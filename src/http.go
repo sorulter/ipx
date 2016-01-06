@@ -22,6 +22,11 @@ var (
 )
 
 func (h *HttpServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "CONNECT" {
+		h.handleHttps(w, r)
+	} else {
+		h.handleHttp(w, r)
+	}
 }
 
 func NewHttpServer(uid uint64) *HttpServer {
