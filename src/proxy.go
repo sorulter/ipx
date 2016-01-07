@@ -95,7 +95,9 @@ func (pm *ProxydManager) del(uid uint64) {
 	if prx, ok := pm.get(uid); ok {
 		if len(prx.conns) > 0 {
 			for _, conn := range prx.conns {
-				conn.Close()
+				if conn != nil {
+					conn.Close()
+				}
 			}
 		}
 		prx.listener.Close()
