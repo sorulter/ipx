@@ -7,4 +7,12 @@ type Config struct {
 		Method      string `json:"method"`
 		Key         string `json:"key"`
 	} `json:"parent_server"`
+	FlowCounter struct {
+		DB struct {
+			Host    string `json:"host"`
+			Port    uint16 `json:"port"`
+			Auth    string `json:"auth"`
+			MaxConn int    `json:"max_connect"`
+		} `json:"db"`
+	} `json:"flow_counter"`
 }
