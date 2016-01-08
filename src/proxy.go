@@ -24,7 +24,7 @@ var (
 	proxyManager = ProxydManager{proxy: map[uint64]*Proxy{}}
 )
 
-func newHttpServer(uid uint64, port uint16) (ok bool, err error) {
+func start(uid uint64, port uint16) (ok bool, err error) {
 	// proxy
 	proxy := NewHttpServer(uid)
 
