@@ -30,7 +30,9 @@ func upload() {
 
 	if rs := ssdb.Cmd("scan", downlimit, uplimit, 9999999); rs.State == hissdb.ReplyOK {
 		for _, v := range rs.Hash() {
-			db.Table("flows").Where("user_id = ?", v.Key[17:]).Update("used", gorm.Expr("used + ?", v.Value))
+			if dberr := db.Table("flows").Where("user_id = ?", v.Key[17:]).Update("used", gorm.Expr("used + ?", v.Value)).Error; dberr != nil {
+				logger.Printf("warn", "[upload]update mysql error: %v", err.Error())
+			}
 		}
 	} else {
 		logger.Printf("warn", "[ssdb]cmd error: scan %s %s 9999999", downlimit, uplimit)
