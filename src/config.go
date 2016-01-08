@@ -8,7 +8,7 @@ type Config struct {
 		Key         string `json:"key"`
 	} `json:"parent_server"`
 	FlowCounter struct {
-		DB struct {
+		SSDB struct {
 			Host    string `json:"host"`
 			Port    uint16 `json:"port"`
 			Auth    string `json:"auth"`
