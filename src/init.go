@@ -5,7 +5,12 @@ import (
 	"os"
 
 	gconf "github.com/gocubes/config"
+	"github.com/lessos/lessgo/data/hissdb"
 	"github.com/lessos/lessgo/logger"
+)
+
+var (
+	ssdb *hissdb.Connector
 )
 
 func init() {
@@ -22,4 +27,20 @@ func init() {
 		logger.Printf("fatal", "[init]get config data error: %v\n", gerr.Error())
 		os.Exit(0)
 	}
+
+	initDB()
+
+}
+
+func initDB() {
+	ssdb, err = hissdb.NewConnector(hissdb.Config{
+		Host:    config.FlowCounter.SSDB.Host,
+		Port:    config.FlowCounter.SSDB.Port,
+		Auth:    config.FlowCounter.SSDB.Auth,
+		MaxConn: config.FlowCounter.SSDB.MaxConn,
+	})
+	if err != nil {
+		logger.Printf("fatal", "init ssdb error: %s", err.Error())
+	}
+
 }
