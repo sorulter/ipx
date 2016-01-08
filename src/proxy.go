@@ -39,16 +39,12 @@ func newHttpServer(uid uint64, port uint16) (ok bool, err error) {
 		// new conn
 		cipher, err := ss.NewCipher(config.ParentServer.Method, config.ParentServer.Key)
 		if err != nil {
-			proxy.Logger.Fatal("create shadowsocks cipher:", err)
 			return nil, err
 		}
 		conn, err = dial(addr, config.ParentServer.HostAndPort, cipher.Copy(), uid)
 		if err != nil {
-			proxy.Logger.Fatalf("can't connect to shadowsocks parent %s for %s: %v\n",
-				config.ParentServer.HostAndPort, addr, err)
 			return nil, err
 		}
-		fmt.Println("Dial to parent", conn)
 		go proxyManager.addConn(uid, conn)
 
 		return
