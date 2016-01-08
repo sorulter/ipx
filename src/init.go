@@ -4,12 +4,15 @@ import (
 	"flag"
 	"os"
 
+	_ "github.com/go-sql-driver/mysql"
 	gconf "github.com/gocubes/config"
+	"github.com/jinzhu/gorm"
 	"github.com/lessos/lessgo/data/hissdb"
 	"github.com/lessos/lessgo/logger"
 )
 
 var (
+	db   gorm.DB
 	ssdb *hissdb.Connector
 )
 
@@ -43,4 +46,9 @@ func initDB() {
 		logger.Printf("fatal", "init ssdb error: %s", err.Error())
 	}
 
+	db, err = gorm.Open("mysql", config.FlowCounter.DB.DSN)
+	if err != nil {
+		logger.Printf("fatal", "MySQL Connect error: %v\n", err.Error())
+		os.Exit(0)
+	}
 }
