@@ -43,6 +43,8 @@ func start(uid uint64, port uint16) (ok bool, err error) {
 		return
 	}
 
+	proxy.Counter = counter
+
 	// http server
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
