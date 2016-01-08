@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/kofj/goproxy"
 	ss "github.com/shadowsocks/shadowsocks-go/shadowsocks"
 )
 
@@ -27,15 +26,9 @@ var (
 
 func newHttpServer(uid uint64, port uint16) (ok bool, err error) {
 	// proxy
-	proxy := goproxy.NewProxyHttpServer()
-	// proxy.Verbose = true
-	proxy.Tr.Dial = func(network, addr string) (conn net.Conn, err error) {
-		// use existed conn
-		// prx, ok := proxyManager.get(uid)
-		// if !ok {
-		// 	return prx.conn, nil
-		// }
+	proxy := NewHttpServer(uid)
 
+	proxy.Tr.Dial = func(network, addr string) (conn net.Conn, err error) {
 		// new conn
 		cipher, err := ss.NewCipher(config.ParentServer.Method, config.ParentServer.Key)
 		if err != nil {
