@@ -13,6 +13,9 @@ type Config struct {
 			Port    uint16 `json:"port"`
 			Auth    string `json:"auth"`
 			MaxConn int    `json:"max_connect"`
+		} `json:"ssdb"`
+		DB struct {
+			DSN string `json:"dsn"`
 		} `json:"db"`
 	} `json:"flow_counter"`
 }
