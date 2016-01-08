@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 )
 
 var (
@@ -16,6 +17,16 @@ func main() {
 
 	// Start api server.
 	go startApiServer()
+
+	// Upload flow data.
+	go func() {
+		for {
+			if time.Now().In(loc).Second() == 1 {
+				upload()
+			}
+			time.Sleep(1e9)
+		}
+	}()
 
 	// Exit main loop
 	sig := make(chan os.Signal)
