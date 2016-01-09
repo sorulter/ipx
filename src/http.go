@@ -10,7 +10,6 @@ import (
 
 type HttpServer struct {
 	Uid             uint64
-	Logger          *log.Logger
 	NotFoundHandler http.Handler
 	Tr              *http.Transport
 	ConnectDial     func(network string, addr string) (net.Conn, error)
