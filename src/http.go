@@ -2,10 +2,11 @@ package main
 
 import (
 	"io"
-	"log"
 	"net"
 	"net/http"
 	"regexp"
+
+	"github.com/lessos/lessgo/logger"
 )
 
 type HttpServer struct {
@@ -41,23 +42,23 @@ func NewHttpServer(uid uint64) *HttpServer {
 
 func httpError(w io.WriteCloser, err error) {
 	if _, err := io.WriteString(w, "HTTP/1.1 502 Bad Gateway\r\n\r\n"); err != nil {
-		log.Printf("Error responding to client: %s", err)
+		logger.Printf("warn", "[proxy]Error responding to client: %s", err.Error())
 	}
 	if err := w.Close(); err != nil {
-		log.Printf("Error closing client connection: %s", err)
+		logger.Printf("warn", "[proxy]Error closing client connection: %s", err.Error())
 	}
 }
 
 func (h *HttpServer) handleHttps(w http.ResponseWriter, r *http.Request) {
 	hij, ok := w.(http.Hijacker)
 	if !ok {
-		panic("httpserver does not support hijacking")
+		logger.Print("warn", "[proxy]httpserver does not support hijacking")
 		return
 	}
 
 	proxyClient, _, e := hij.Hijack()
 	if e != nil {
-		panic("Cannot hijack connection " + e.Error())
+		logger.Printf("warn", "[proxy]Cannot hijack connection %v", e.Error())
 		return
 	}
 
@@ -96,12 +97,12 @@ func (h *HttpServer) copyAndClose(w, r net.Conn) {
 	n, err := io.Copy(w, r)
 	if err != nil {
 		connOk = false
-		log.Printf("Error copying to client: %s, %d bytes", err, n)
+		logger.Printf("warn", "[proxy]Error copying to client: %s, %d bytes", err.Error(), n)
 	}
 	go h.Counter(h.Uid, n)
 
 	if err := r.Close(); err != nil && connOk {
-		log.Printf("Error closing: %s", err)
+		logger.Printf("warn", "[proxy]Error closing client connection: %s", err.Error())
 	}
 }
 
@@ -124,7 +125,7 @@ func (h *HttpServer) handleHttp(w http.ResponseWriter, r *http.Request) {
 
 	nr, _ := io.Copy(w, resp.Body)
 	if err := resp.Body.Close(); err != nil {
-		log.Printf("Can't close response body %v", err)
+		logger.Printf("warn", "[proxy]close response body error:%s", err.Error())
 	}
 	go h.Counter(h.Uid, nr+nh)
 }
