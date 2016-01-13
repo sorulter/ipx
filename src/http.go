@@ -44,12 +44,13 @@ func NewHttpServer(uid uint64) *HttpServer {
 }
 
 func httpError(w io.WriteCloser, err error) {
-	if _, err := io.WriteString(w, "HTTP/1.1 502 Bad Gateway\r\n\r\n"); err != nil {
-		logger.Printf("warn", "[proxy]Error responding to client: %s", err.Error())
+	if _, err2 := io.WriteString(w, "HTTP/1.1 502 Bad Gateway\r\n\r\n"); err2 != nil {
+		logger.Printf("warn", "[proxy]Error responding to client: %s", err2.Error())
 	}
-	if err := w.Close(); err != nil {
-		logger.Printf("warn", "[proxy]Error closing client connection: %s", err.Error())
+	if err3 := w.Close(); err3 != nil {
+		logger.Printf("warn", "[proxy]Error closing client connection: %s", err3.Error())
 	}
+	logger.Printf("warn", "[proxy]Error dail to remote server,response 502 and closed request: %v", err.Error())
 }
 
 func (h *HttpServer) handleHttps(w http.ResponseWriter, r *http.Request) {
