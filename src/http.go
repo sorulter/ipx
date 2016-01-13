@@ -15,6 +15,7 @@ type HttpServer struct {
 	Tr              *http.Transport
 	ConnectDial     func(network string, addr string) (net.Conn, error)
 	Counter         func(uid uint64, bytes int64)
+	FailFlowCounter func(target string, bytes int64)
 }
 
 var (
@@ -37,6 +38,8 @@ func NewHttpServer(uid uint64) *HttpServer {
 		}),
 		Tr:      &http.Transport{Proxy: http.ProxyFromEnvironment},
 		Counter: func(uid uint64, bytes int64) {},
+
+		FailFlowCounter: func(target string, bytes int64) {},
 	}
 }
 
