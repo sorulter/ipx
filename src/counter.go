@@ -39,3 +39,10 @@ func upload() {
 	}
 
 }
+
+func failFlowCounter(target string, bytes int64) {
+	key := fmt.Sprintf("ipx.fail.flow.%s", time.Now().In(loc).Format("2006010215"))
+	if rs := ssdb.Cmd("incr", key, fmt.Sprint(bytes)); rs.State != hissdb.ReplyOK {
+		logger.Printf("warn", "Log fial flow error: %v, incr %s %d\n", rs.State, key, bytes)
+	}
+}
