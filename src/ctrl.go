@@ -46,6 +46,7 @@ func start(uid uint64, port uint16) (ok bool, err error) {
 	}
 
 	proxy.Counter = counter
+	proxy.FailFlowCounter = failFlowCounter
 
 	// http server
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
