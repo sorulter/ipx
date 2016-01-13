@@ -76,8 +76,8 @@ func (h *HttpServer) handleHttps(w http.ResponseWriter, r *http.Request) {
 	}
 	// log.Printf("Accepting CONNECT to %s", host)
 	proxyClient.Write([]byte("HTTP/1.0 200 OK\r\n\r\n"))
-	go h.copyAndClose(targetSiteCon, proxyClient)
-	go h.copyAndClose(proxyClient, targetSiteCon)
+	go h.copyAndClose(targetSiteCon, proxyClient, r, "to client")
+	go h.copyAndClose(proxyClient, targetSiteCon, r, "to server")
 
 }
 
@@ -95,14 +95,16 @@ func (h *HttpServer) dial(network, addr string) (c net.Conn, err error) {
 	return net.Dial(network, addr)
 }
 
-func (h *HttpServer) copyAndClose(w, r net.Conn) {
+func (h *HttpServer) copyAndClose(w, r net.Conn, req *http.Request, do string) {
 	connOk := true
 	n, err := io.Copy(w, r)
 	if err != nil {
 		connOk = false
-		logger.Printf("warn", "[proxy]Error copying to client: %s, %d bytes", err.Error(), n)
+		logger.Printf("warn", "[proxy]Error %s: %s, %d bytes,host is: %v", do, err.Error(), n, req.URL.Host)
+		go h.FailFlowCounter(req.URL.Host, n)
+	} else {
+		go h.Counter(h.Uid, n)
 	}
-	go h.Counter(h.Uid, n)
 
 	if err := r.Close(); err != nil && connOk {
 		logger.Printf("warn", "[proxy]Error closing client connection: %s", err.Error())
