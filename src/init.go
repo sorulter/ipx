@@ -44,6 +44,7 @@ func initDB() {
 	})
 	if err != nil {
 		logger.Printf("fatal", "init ssdb error: %s", err.Error())
+		os.Exit(0)
 	}
 
 	db, err = gorm.Open("mysql", config.FlowCounter.DB.DSN)
