@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"sync"
 
+	"github.com/lessos/lessgo/logger"
 	ss "github.com/shadowsocks/shadowsocks-go/shadowsocks"
 )
 
@@ -27,6 +28,7 @@ var (
 func start(uid uint64, port uint16) (ok bool, err error) {
 	// proxy
 	proxy := NewHttpServer(uid)
+	logger.Printf("info", "[ctrl]start listen port %d as proxy http server for user %d.", port, uid)
 
 	proxy.Tr.Dial = func(network, addr string) (conn net.Conn, err error) {
 		// new conn
