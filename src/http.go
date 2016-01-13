@@ -76,8 +76,8 @@ func (h *HttpServer) handleHttps(w http.ResponseWriter, r *http.Request) {
 	}
 	// log.Printf("Accepting CONNECT to %s", host)
 	proxyClient.Write([]byte("HTTP/1.0 200 OK\r\n\r\n"))
-	go h.copyAndClose(targetSiteCon, proxyClient, r, "to client")
-	go h.copyAndClose(proxyClient, targetSiteCon, r, "to server")
+	go h.copyAndClose(targetSiteCon, proxyClient, r, "to server")
+	go h.copyAndClose(proxyClient, targetSiteCon, r, "to client")
 
 }
 
