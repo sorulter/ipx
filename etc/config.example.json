@@ -1,0 +1,17 @@
+{
+    "flow_counter": {
+        "ssdb": {
+            "host": "127.0.0.1",
+            "port": 8888,
+            "auth": ""
+        },
+        "db": {
+            "dsn": "user:password@tcp(host:port)/database?charset=utf8&parseTime=True&loc=Asia%2FShanghai"
+        }
+    },
+    "parent_server": {
+        "host_and_port": "shawdowsocks_host:port",
+        "method": "aes-256-cfb",
+        "key": "the_key"
+    }
+}
