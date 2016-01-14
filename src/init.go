@@ -2,7 +2,10 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
+	"os"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 	gconf "github.com/gocubes/config"
@@ -14,11 +17,19 @@ var (
 	db   gorm.DB
 	ssdb *hissdb.Connector
 	pre  string
+	v    bool
+	Git  string
 )
 
 func init() {
 	flag.StringVar(&pre, "prefix", ".", "config file prefix path")
+	flag.BoolVar(&v, "v", false, "show version info")
 	flag.Parse()
+
+	if v {
+		fmt.Printf("Version: %s, build at: %s\n ", Git, time.Now().In(loc))
+		os.Exit(0)
+	}
 
 	provier, perr := gconf.New(pre+"/etc/config.json", "json")
 	if perr != nil {
