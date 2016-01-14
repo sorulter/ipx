@@ -12,7 +12,6 @@ import (
 )
 
 type Proxy struct {
-	conns    []net.Conn
 	listener net.Listener
 }
 
@@ -40,7 +39,6 @@ func start(uid uint64, port uint16) (ok bool, err error) {
 		if err != nil {
 			return nil, err
 		}
-		go proxyManager.addConn(uid, conn)
 
 		return
 	}
@@ -69,13 +67,8 @@ func stop(uid uint64) {
 
 func (pm *ProxydManager) add(uid uint64, listener net.Listener, conn net.Conn) {
 	pm.Lock()
-	pm.proxy[uid] = &Proxy{nil, listener}
+	pm.proxy[uid] = &Proxy{listener}
 	pm.Unlock()
-	pm.addConn(uid, conn)
-}
-
-func (pm *ProxydManager) addConn(uid uint64, conn net.Conn) {
-	pm.proxy[uid].conns = append(pm.proxy[uid].conns, conn)
 }
 
 func (pm *ProxydManager) get(uid uint64) (prx *Proxy, ok bool) {
@@ -87,13 +80,6 @@ func (pm *ProxydManager) get(uid uint64) (prx *Proxy, ok bool) {
 
 func (pm *ProxydManager) del(uid uint64) {
 	if prx, ok := pm.get(uid); ok {
-		if len(prx.conns) > 0 {
-			for _, conn := range prx.conns {
-				if conn != nil {
-					conn.Close()
-				}
-			}
-		}
 		prx.listener.Close()
 		pm.Lock()
 		delete(pm.proxy, uid)
