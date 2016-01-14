@@ -6,6 +6,7 @@ import (
 	"net"
 	"net/http"
 	"sync"
+	"time"
 
 	"github.com/lessos/lessgo/logger"
 	ss "github.com/shadowsocks/shadowsocks-go/shadowsocks"
@@ -84,5 +85,60 @@ func (pm *ProxydManager) del(uid uint64) {
 		pm.Lock()
 		delete(pm.proxy, uid)
 		pm.Unlock()
+	}
+}
+
+type Port struct {
+	NodeName     string
+	Port         uint16
+	UserId       uint64
+	Used         int
+	Free         int
+	ComboFlows   int
+	ComboEndDate time.Time
+	PortUpdateAt time.Time
+}
+
+func crtl() {
+	getAndListenPorts()
+
+	for {
+		time.Sleep(15e9)
+		getAndListenPorts()
+	}
+}
+
+func getAndListenPorts() {
+	var (
+		ports []Port
+	)
+
+	db.Table("ports").Select(
+		"node_name,`port`,ports.user_id,ports.updated_at as port_update_at,used,free,combo_flows,combo_end_date").Joins(
+		"JOIN flows ON ports.user_id = flows.user_id").Where(
+		" node_name = ?", "sh1",
+	).Find(&ports)
+
+	for _, port := range ports {
+		// No any flows.
+		if port.ComboFlows+port.Free == 0 {
+			return
+		}
+
+		_, isRunning := proxyManager.get(port.UserId)
+
+		fmt.Printf("[check]user %d (port %d) is running: %v\n", port.UserId, port.Port, isRunning)
+
+		// Not running and have enough flows.
+		if !isRunning && port.Used < port.ComboFlows+port.Free {
+			// fmt.Printf("[Start] user %d, port %d, used: %d, flows: %d\n", port.UserId, port.Used, port.ComboFlows, port.Free)
+			start(port.UserId, port.Port)
+		}
+
+		// Is running but have not enough flows.
+		if isRunning && port.Used >= port.ComboFlows+port.Free {
+			// fmt.Printf("Stop user %d, port %d\n", port.UserId, port.Port)
+			stop(port.UserId)
+		}
 	}
 }
