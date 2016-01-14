@@ -1,4 +1,5 @@
 {
+    "node_name": "node_name_of_this_server",
     "flow_counter": {
         "ssdb": {
             "host": "127.0.0.1",

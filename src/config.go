@@ -1,6 +1,7 @@
 package main
 
 type Config struct {
+	NodeName     string `json:"node_name"`
 	ParentServer struct {
 		HostAndPort string `json:"host_and_port"`
 		Method      string `json:"method"`
