@@ -13,12 +13,14 @@ import (
 var (
 	db   gorm.DB
 	ssdb *hissdb.Connector
+	pre  string
 )
 
 func init() {
+	flag.StringVar(&pre, "prefix", ".", "config file prefix path")
 	flag.Parse()
 
-	provier, perr := gconf.New("etc/config.json", "json")
+	provier, perr := gconf.New(pre+"/etc/config.json", "json")
 	if perr != nil {
 		log.Fatalf("[init]create config provider error: %v\n", perr.Error())
 	}
