@@ -116,7 +116,7 @@ func getAndListenPorts() {
 	db.Table("ports").Select(
 		"node_name,`port`,ports.user_id,ports.updated_at as port_update_at,used,free,combo_flows,combo_end_date").Joins(
 		"JOIN flows ON ports.user_id = flows.user_id").Where(
-		" node_name = ?", "sh1",
+		" node_name = ?", config.NodeName,
 	).Find(&ports)
 
 	for _, port := range ports {
