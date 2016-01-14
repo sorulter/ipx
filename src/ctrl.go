@@ -119,6 +119,7 @@ func getAndListenPorts() {
 		" node_name = ?", config.NodeName,
 	).Find(&ports)
 
+	now := time.Now().In(loc)
 	for _, port := range ports {
 		// No any flows.
 		if port.ComboFlows+port.Free == 0 {
@@ -142,7 +143,7 @@ func getAndListenPorts() {
 		}
 
 		// Is running but now is after combo end time.
-		if isRunning && now.After(port.ComboEndDate) {
+		if isRunning && now.After(port.ComboEndDate) && port.Free <= port.Used {
 			fmt.Printf("Combo is after the time,Stop user %d, port %d\n", port.UserId, port.Port)
 			stop(port.UserId)
 		}
