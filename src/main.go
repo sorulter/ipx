@@ -14,10 +14,6 @@ var (
 )
 
 func main() {
-
-	// Start api server.
-	go startApiServer()
-
 	// Upload flow data.
 	go func() {
 		for {
@@ -27,6 +23,8 @@ func main() {
 			time.Sleep(1e9)
 		}
 	}()
+
+	go crtl()
 
 	// Exit main loop
 	sig := make(chan os.Signal)
