@@ -136,6 +136,11 @@ func getAndListenPorts() {
 			start(port.UserId, port.Port)
 		}
 
+		// After combo flows end time, but have enough free flows.
+		if !isRunning && now.After(port.ComboEndDate) && port.Free > port.Used {
+			start(port.UserId, port.Port)
+		}
+
 		// Is running but have not enough flows.
 		if isRunning && port.Used >= port.ComboFlows+port.Free {
 			// fmt.Printf("Stop user %d, port %d\n", port.UserId, port.Port)
