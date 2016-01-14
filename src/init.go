@@ -27,7 +27,7 @@ func init() {
 	flag.Parse()
 
 	if v {
-		fmt.Printf("Version: %s, build at: %s\n ", Git, time.Now().In(loc))
+		fmt.Printf("Version: %s,\nBuild at: %s.\n", Git, time.Now().In(loc))
 		os.Exit(0)
 	}
 
@@ -60,4 +60,9 @@ func initDB() {
 	if err != nil {
 		log.Fatalf("[init db]MySQL Connect error: %v\n", err.Error())
 	}
+	// db = *db.Debug()
+	db.LogMode(true)
+	db.DB().SetMaxIdleConns(50)
+	db.DB().SetMaxOpenConns(200)
+
 }
