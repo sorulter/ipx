@@ -131,7 +131,7 @@ func getAndListenPorts() {
 		fmt.Printf("[check]user %d (port %d) is running: %v\n", port.UserId, port.Port, isRunning)
 
 		// Not running and have enough flows.
-		if !isRunning && port.Used < port.ComboFlows+port.Free {
+		if !isRunning && !now.After(port.ComboEndDate) && port.ComboFlows+port.Free > port.Used {
 			// fmt.Printf("[Start] user %d, port %d, used: %d, flows: %d\n", port.UserId, port.Used, port.ComboFlows, port.Free)
 			start(port.UserId, port.Port)
 		}
