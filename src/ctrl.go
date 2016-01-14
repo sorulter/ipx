@@ -128,8 +128,6 @@ func getAndListenPorts() {
 
 		_, isRunning := proxyManager.get(port.UserId)
 
-		fmt.Printf("[check]user %d (port %d) is running: %v\n", port.UserId, port.Port, isRunning)
-
 		// Not running and have enough flows.
 		if !isRunning && !now.After(port.ComboEndDate) && port.ComboFlows+port.Free > port.Used {
 			// fmt.Printf("[Start] user %d, port %d, used: %d, flows: %d\n", port.UserId, port.Used, port.ComboFlows, port.Free)
