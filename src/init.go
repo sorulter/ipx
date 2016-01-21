@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 	gconf "github.com/gocubes/config"
@@ -19,6 +18,7 @@ var (
 	pre  string
 	v    bool
 	Git  string
+	At   string
 )
 
 func init() {
@@ -27,7 +27,7 @@ func init() {
 	flag.Parse()
 
 	if v {
-		fmt.Printf("Version: %s,\nBuild at: %s.\n", Git, time.Now().In(loc))
+		fmt.Printf("Version: %s,\nBuild At: %s UTC.\n", Git, At)
 		os.Exit(0)
 	}
 
