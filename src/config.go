@@ -18,4 +18,5 @@ type Config struct {
 			DSN string `json:"dsn"`
 		} `json:"db"`
 	} `json:"flow_counter"`
+	KeepAliveTimeout uint16 `json:"keepalive_timeout"`
 }
