@@ -56,6 +56,8 @@ func start(uid uint64, port uint16) (ok bool, err error) {
 	go proxyManager.add(uid, listener, nil)
 	server := http.Server{
 		Handler: proxy,
+
+		ReadTimeout: time.Duration(config.KeepAliveTimeout) * time.Second,
 	}
 	go server.Serve(listener)
 	return true, err
