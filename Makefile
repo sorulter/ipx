@@ -1,4 +1,5 @@
-GIT=`git rev-list HEAD -n 1|cut -c 1-7`
+GIT=`git describe --always`
+AT=`date -u +%Y%m%d.%H%M%S`
 
 all: dependencies current linux
 	@printf "\e[31m Build Complete.\e[0m\r\n"
@@ -14,7 +15,7 @@ dependencies:
 
 current:
 	@printf "\e[34m Build Current OS Binary \e[0m\r\n"
-	@go build -ldflags "-s -w -X main.Git=$(GIT)" -o ./bin/ipx ./src/*.go
+	@go build -ldflags "-s -w -X main.Git=$(GIT) -X main.At=$(AT)" -o ./bin/ipx ./src/*.go
 
 linux:
 	@printf "\e[34m Build Linux Binary \e[0m\r\n"
@@ -23,4 +24,4 @@ linux:
 run: dependencies current
 	@ls -l ./bin/*
 	@printf "\e[32;47m RUN Server \e[0m"
-	./bin/ipx -log_dir="./logs"
+	./bin/ipx -logtostderr #-log_dir="logs/"
