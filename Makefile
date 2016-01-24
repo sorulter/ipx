@@ -19,7 +19,7 @@ current:
 
 linux:
 	@printf "\e[34m Build Linux Binary \e[0m\r\n"
-	@GOARCH=amd64 GOOS=linux go build -ldflags "-s -w -X main.Git=$(GIT)" -o ./bin/ipx-64x-linux ./src/*.go
+	@GOARCH=amd64 GOOS=linux go build -ldflags "-s -w -X main.Git=$(GIT) -X main.At=$(AT)" -o ./bin/ipx-64x-linux ./src/*.go
 
 run: dependencies current
 	@ls -l ./bin/*
