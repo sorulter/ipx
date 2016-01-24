@@ -21,6 +21,10 @@ linux:
 	@printf "\e[34m Build Linux Binary \e[0m\r\n"
 	@GOARCH=amd64 GOOS=linux go build -ldflags "-s -w -X main.Git=$(GIT) -X main.At=$(AT)" -o ./bin/ipx-64x-linux ./src/*.go
 
+linux32:
+	@printf "\e[34m Build Linux Binary \e[0m\r\n"
+	@GOARCH=386 GOOS=linux go build -ldflags "-s -w -X main.Git=$(GIT) -X main.At=$(AT)" -o ./bin/ipx-386-linux ./src/*.go
+
 run: dependencies current
 	@ls -l ./bin/*
 	@printf "\e[32;47m RUN Server \e[0m"
