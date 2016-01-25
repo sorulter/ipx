@@ -19,4 +19,5 @@ type Config struct {
 		} `json:"db"`
 	} `json:"flow_counter"`
 	KeepAliveTimeout uint16 `json:"keepalive_timeout"`
+	CountFailFlows   bool   `json:"count_fail_flows"` // If true, will record as user's flows.
 }

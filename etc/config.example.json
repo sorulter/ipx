@@ -1,4 +1,5 @@
 {
+    "count_fail_flows": false,
     "node_name": "node_name_of_this_server",
     "keepalive_timeout": 75,
     "flow_counter": {
