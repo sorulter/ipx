@@ -102,6 +102,9 @@ func (h *HttpServer) copyAndClose(w, r net.Conn, req *http.Request, do string) {
 	if err != nil {
 		connOk = false
 		logger.Printf("warn", "[proxy]Error %s: %s, %d bytes,host is: %v", do, err.Error(), n, req.URL.Host)
+		if config.CountFailFlows {
+			go h.Counter(h.Uid, n)
+		}
 		go h.FailFlowCounter(req.URL.Host, n)
 	} else {
 		go h.Counter(h.Uid, n)
