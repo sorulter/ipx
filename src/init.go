@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"syscall"
 
 	_ "github.com/go-sql-driver/mysql"
 	gconf "github.com/gocubes/config"
@@ -40,6 +41,7 @@ func init() {
 	if gerr != nil {
 		log.Fatalf("[init]get config data error: %v\n", gerr.Error())
 	}
+	provier.ReloadOn(&config, syscall.SIGUSR1)
 
 	initDB()
 
