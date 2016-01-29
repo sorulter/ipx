@@ -18,6 +18,7 @@ type Config struct {
 			DSN string `json:"dsn"`
 		} `json:"db"`
 	} `json:"flow_counter"`
-	KeepAliveTimeout uint16 `json:"keepalive_timeout"`
-	CountFailFlows   bool   `json:"count_fail_flows"` // If true, will record as user's flows.
+	KeepAliveTimeout uint16  `json:"keepalive_timeout"`
+	CountFailFlows   bool    `json:"count_fail_flows"` // If true, will record as user's flows.
+	Multiple         float32 `json:"multiple"`
 }
