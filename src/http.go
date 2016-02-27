@@ -5,6 +5,7 @@ import (
 	"net"
 	"net/http"
 	"regexp"
+	"strings"
 
 	"github.com/lessos/lessgo/logger"
 )
@@ -14,7 +15,7 @@ type HttpServer struct {
 	NotFoundHandler http.Handler
 	Tr              *http.Transport
 	ConnectDial     func(network string, addr string) (net.Conn, error)
-	Counter         func(uid uint64, bytes int64)
+	Counter         func(uid uint64, bytes int64, ipstr string)
 	FailFlowCounter func(target string, bytes int64)
 }
 
@@ -37,7 +38,7 @@ func NewHttpServer(uid uint64) *HttpServer {
 			http.Error(w, "Illegal requests.", 500)
 		}),
 		Tr:      &http.Transport{Proxy: http.ProxyFromEnvironment},
-		Counter: func(uid uint64, bytes int64) {},
+		Counter: func(uid uint64, bytes int64, ipstr string) {},
 
 		FailFlowCounter: func(target string, bytes int64) {},
 	}
@@ -54,6 +55,8 @@ func httpError(w io.WriteCloser, err error) {
 }
 
 func (h *HttpServer) handleHttps(w http.ResponseWriter, r *http.Request) {
+	var clientIp = strings.Split(r.RemoteAddr, ":")[0]
+
 	hij, ok := w.(http.Hijacker)
 	if !ok {
 		logger.Print("warn", "[proxy]httpserver does not support hijacking")
@@ -77,8 +80,8 @@ func (h *HttpServer) handleHttps(w http.ResponseWriter, r *http.Request) {
 	}
 	// log.Printf("Accepting CONNECT to %s", host)
 	proxyClient.Write([]byte("HTTP/1.0 200 OK\r\n\r\n"))
-	go h.copyAndClose(targetSiteCon, proxyClient, r, "to server")
-	go h.copyAndClose(proxyClient, targetSiteCon, r, "to client")
+	go h.copyAndClose(targetSiteCon, proxyClient, r, clientIp, "to server")
+	go h.copyAndClose(proxyClient, targetSiteCon, r, clientIp, "to client")
 
 }
 
@@ -96,18 +99,18 @@ func (h *HttpServer) dial(network, addr string) (c net.Conn, err error) {
 	return net.Dial(network, addr)
 }
 
-func (h *HttpServer) copyAndClose(w, r net.Conn, req *http.Request, do string) {
+func (h *HttpServer) copyAndClose(w, r net.Conn, req *http.Request, clientIp string, do string) {
 	connOk := true
 	n, err := io.Copy(w, r)
 	if err != nil {
 		connOk = false
 		logger.Printf("warn", "[proxy]Error %s: %s, %d bytes,host is: %v", do, err.Error(), n, req.URL.Host)
 		if config.CountFailFlows {
-			go h.Counter(h.Uid, n)
+			go h.Counter(h.Uid, n, clientIp)
 		}
 		go h.FailFlowCounter(req.URL.Host, n)
 	} else {
-		go h.Counter(h.Uid, n)
+		go h.Counter(h.Uid, n, clientIp)
 	}
 
 	if err := r.Close(); err != nil && connOk {
@@ -116,6 +119,8 @@ func (h *HttpServer) copyAndClose(w, r net.Conn, req *http.Request, do string) {
 }
 
 func (h *HttpServer) handleHttp(w http.ResponseWriter, r *http.Request) {
+	var clientIp = strings.Split(r.RemoteAddr, ":")[0]
+
 	if !r.URL.IsAbs() {
 		h.NotFoundHandler.ServeHTTP(w, r)
 		return
@@ -136,7 +141,7 @@ func (h *HttpServer) handleHttp(w http.ResponseWriter, r *http.Request) {
 	if err := resp.Body.Close(); err != nil {
 		logger.Printf("warn", "[proxy]close response body error:%s", err.Error())
 	}
-	go h.Counter(h.Uid, nr+nh)
+	go h.Counter(h.Uid, nr+nh, clientIp)
 }
 
 func removeProxyHeaders(r *http.Request) {
