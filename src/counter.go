@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/jinzhu/gorm"
@@ -30,7 +32,8 @@ func upload() {
 
 	if rs := ssdb.Cmd("scan", downlimit, uplimit, 9999999); rs.State == hissdb.ReplyOK {
 		for _, v := range rs.Hash() {
-			if dberr := db.Table("flows").Where("user_id = ?", v.Key[17:]).Updates(map[string]interface{}{
+			id, _ := getIdIp(v.Key)
+			if dberr := db.Table("flows").Where("user_id = ?", id).Updates(map[string]interface{}{
 				"used":       gorm.Expr("used + ? * ?", v.Value, config.Multiple),
 				"updated_at": time.Now(),
 			}).Error; dberr != nil {
@@ -48,4 +51,12 @@ func failFlowCounter(target string, bytes int64) {
 	if rs := ssdb.Cmd("incr", key, fmt.Sprint(bytes)); rs.State != hissdb.ReplyOK {
 		logger.Printf("warn", "Log fial flow error: %v, incr %s %d\n", rs.State, key, bytes)
 	}
+}
+
+func getIdIp(key string) (id, ip string) {
+	slice := strings.Split(key, ".")
+	id = slice[2]
+	long, _ := strconv.ParseUint(slice[3], 0, 32)
+	ip = long2ip(uint32(long))
+	return
 }
