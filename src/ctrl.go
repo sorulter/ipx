@@ -125,7 +125,7 @@ func getAndListenPorts() {
 	for _, port := range ports {
 		// No any flows.
 		if port.ComboFlows+port.Free == 0 {
-			return
+			continue
 		}
 
 		_, isRunning := proxyManager.get(port.UserId)
