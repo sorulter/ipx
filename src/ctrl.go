@@ -90,6 +90,21 @@ func (pm *ProxydManager) del(uid uint64) {
 	}
 }
 
+func (pm *ProxydManager) clean(uids []uint64) {
+	for id := range pm.proxy {
+		var hasid bool
+		for _, uid := range uids {
+			if uid == id {
+				hasid = true
+			}
+		}
+		if !hasid {
+			pm.del(id)
+		}
+	}
+
+}
+
 type Port struct {
 	NodeName     string
 	Port         uint16
@@ -113,6 +128,7 @@ func crtl() {
 func getAndListenPorts() {
 	var (
 		ports []Port
+		ids   []uint64
 	)
 
 	db.Table("ports").Select(
@@ -123,6 +139,8 @@ func getAndListenPorts() {
 
 	now := time.Now().In(loc)
 	for _, port := range ports {
+		ids = append(ids, port.UserId)
+
 		// No any flows.
 		if port.ComboFlows+port.Free == 0 {
 			continue
@@ -153,4 +171,5 @@ func getAndListenPorts() {
 			stop(port.UserId)
 		}
 	}
+	proxyManager.clean(ids)
 }
