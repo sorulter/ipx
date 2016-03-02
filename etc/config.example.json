@@ -3,6 +3,9 @@
     "multiple": 1.0,
     "node_name": "node_name_of_this_server",
     "keepalive_timeout": 75,
+    "cros": [
+        "http://example.com"
+    ],
     "flow_counter": {
         "ssdb": {
             "host": "127.0.0.1",
