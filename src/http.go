@@ -27,7 +27,18 @@ func (h *HttpServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "CONNECT" {
 		h.handleHttps(w, r)
 	} else {
-		h.handleHttp(w, r)
+		if r.RequestURI == "/ping" {
+			var origin = r.Header.Get("Origin")
+			for _, cros := range config.CROS {
+				if origin == cros {
+					w.Header().Set("Access-Control-Allow-Origin", origin)
+					break
+				}
+			}
+			w.Write([]byte("pong"))
+		} else {
+			h.handleHttp(w, r)
+		}
 	}
 }
 
