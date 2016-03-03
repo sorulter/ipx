@@ -109,6 +109,7 @@ type Port struct {
 	NodeName     string
 	Port         uint16
 	UserId       uint64
+	Activate     int
 	Used         int
 	Free         int
 	ComboFlows   int
@@ -132,8 +133,8 @@ func getAndListenPorts() {
 	)
 
 	db.Table("ports").Select(
-		"node_name,`port`,ports.user_id,ports.updated_at as port_update_at,used,free,combo_flows,combo_end_date").Joins(
-		"JOIN flows ON ports.user_id = flows.user_id").Where(
+		"node_name,`port`,ports.user_id,ports.updated_at as port_update_at,activate,used,free,combo_flows,combo_end_date").Joins(
+		"JOIN flows ON ports.user_id = flows.user_id JOIN users ON ports.user_id = users.id").Where(
 		" node_name = ?", config.NodeName,
 	).Find(&ports)
 
@@ -149,13 +150,13 @@ func getAndListenPorts() {
 		_, isRunning := proxyManager.get(port.UserId)
 
 		// Not running and have enough flows.
-		if !isRunning && !now.After(port.ComboEndDate) && port.ComboFlows+port.Free > port.Used {
+		if !isRunning && !now.After(port.ComboEndDate) && port.ComboFlows+port.Free > port.Used && port.Activate == 1 {
 			// fmt.Printf("[Start] user %d, port %d, used: %d, flows: %d\n", port.UserId, port.Used, port.ComboFlows, port.Free)
 			start(port.UserId, port.Port)
 		}
 
 		// After combo flows end time, but have enough free flows.
-		if !isRunning && now.After(port.ComboEndDate) && port.Free > port.Used {
+		if !isRunning && now.After(port.ComboEndDate) && port.Free > port.Used && port.Activate == 1 {
 			start(port.UserId, port.Port)
 		}
 
