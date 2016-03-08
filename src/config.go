@@ -22,5 +22,8 @@ type Config struct {
 	CountFailFlows   bool    `json:"count_fail_flows"` // If true, will record as user's flows.
 	Multiple         float32 `json:"multiple"`
 
-	CROS []string `json:"cros"`
+	CROS     []string `json:"cros"`
+	Ping     string   `json:"ping"`
+	PingKey  string   `json:"ping_key"`
+	PingCert string   `json:"ping_cert"`
 }
