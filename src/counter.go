@@ -53,10 +53,9 @@ func failFlowCounter(target string, bytes int64) {
 	}
 }
 
-func getIdIp(key string) (id, ip string) {
+func getIdIp(key string) (id uint64, ip string) {
 	slice := strings.Split(key, ".")
-	id = slice[2]
-	long, _ := strconv.ParseUint(slice[3], 0, 32)
-	ip = long2ip(uint32(long))
+	id, _ = strconv.ParseUint(slice[2], 0, 32)
+	ip = slice[3]
 	return
 }
