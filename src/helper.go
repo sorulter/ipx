@@ -19,3 +19,8 @@ func long2ip(ipLong uint32) string {
 	ip := net.IP(ipByte)
 	return ip.String()
 }
+
+func logshash(id uint64) string {
+	var tab = map[int]string{0: "a", 1: "b", 2: "c", 3: "d", 4: "e"}
+	return tab[int(id%5)]
+}
