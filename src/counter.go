@@ -32,13 +32,18 @@ func upload() {
 
 	if rs := ssdb.Cmd("scan", downlimit, uplimit, 9999999); rs.State == hissdb.ReplyOK {
 		for _, v := range rs.Hash() {
-			id, _ := getIdIp(v.Key)
+			id, ip := getIdIp(v.Key)
 			if dberr := db.Table("flows").Where("user_id = ?", id).Updates(map[string]interface{}{
 				"used":       gorm.Expr("used + ? * ?", v.Value, config.Multiple),
 				"updated_at": time.Now(),
 			}).Error; dberr != nil {
 				logger.Printf("warn", "[upload]update mysql error: %v", err.Error())
 			}
+
+			// Logs
+			used, _ := strconv.ParseFloat(v.Value, 0)
+			db.Exec("INSERT INTO `logs_"+logshash(id)+"` (`user_id`, `flows`, `node`, `client_ip`, `used_at`) VALUES (?, ?, ?, ?, ?)", id, float32(used)*config.Multiple, config.NodeName, ip, now.Format("2006/01/02 15:04:05"))
+
 		}
 	} else {
 		logger.Printf("warn", "[ssdb]cmd error: scan %s %s 9999999", downlimit, uplimit)
