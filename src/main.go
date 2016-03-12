@@ -14,6 +14,9 @@ var (
 )
 
 func main() {
+	// ping
+	go ping()
+
 	// Upload flow data.
 	go func() {
 		for {
