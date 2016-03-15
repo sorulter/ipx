@@ -37,7 +37,7 @@ func upload() {
 				"used":       gorm.Expr("used + ? * ?", v.Value, config.Multiple),
 				"updated_at": time.Now(),
 			}).Error; dberr != nil {
-				logger.Printf("warn", "[upload]update mysql error: %v", err.Error())
+				logger.Printf("warn", "[upload]update mysql error: %v", dberr.Error())
 			}
 
 			// Logs
