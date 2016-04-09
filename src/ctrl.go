@@ -91,6 +91,8 @@ func (pm *ProxydManager) del(uid uint64) {
 }
 
 func (pm *ProxydManager) clean(uids []uint64) {
+	pm.Lock()
+	defer pm.Unlock()
 	for id := range pm.proxy {
 		var hasid bool
 		for _, uid := range uids {
