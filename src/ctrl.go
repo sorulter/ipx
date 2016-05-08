@@ -113,8 +113,9 @@ type Port struct {
 	UserId       uint64
 	Activate     int
 	Used         int
-	Free         int
-	ComboFlows   int
+	Forever      int
+	Combo        int
+	Extra        int
 	ComboEndDate time.Time
 	PortUpdateAt time.Time
 }
@@ -135,7 +136,7 @@ func getAndListenPorts() {
 	)
 
 	db.Table("ports").Select(
-		"node_name,`port`,ports.user_id,ports.updated_at as port_update_at,activate,used,free,combo_flows,combo_end_date").Joins(
+		"node_name,`port`,ports.user_id,ports.updated_at as port_update_at,activate,used,forever,combo,extra,combo_end_date").Joins(
 		"JOIN flows ON ports.user_id = flows.user_id JOIN users ON ports.user_id = users.id").Where(
 		" node_name = ?", config.NodeName,
 	).Find(&ports)
@@ -145,31 +146,31 @@ func getAndListenPorts() {
 		ids = append(ids, port.UserId)
 
 		// No any flows.
-		if port.ComboFlows+port.Free == 0 {
+		if port.Combo+port.Forever+port.Extra == 0 {
 			continue
 		}
 
 		_, isRunning := proxyManager.get(port.UserId)
 
 		// Not running and have enough flows.
-		if !isRunning && !now.After(port.ComboEndDate) && port.ComboFlows+port.Free > port.Used && port.Activate == 1 {
-			// fmt.Printf("[Start] user %d, port %d, used: %d, flows: %d\n", port.UserId, port.Used, port.ComboFlows, port.Free)
+		if !isRunning && !now.After(port.ComboEndDate) && port.Combo+port.Forever+port.Extra > port.Used && port.Activate == 1 {
+			// fmt.Printf("[Start] user %d, port %d, used: %d, flows: %d\n", port.UserId, port.Used, port.Combo, port.Forever)
 			start(port.UserId, port.Port)
 		}
 
-		// After combo flows end time, but have enough free flows.
-		if !isRunning && now.After(port.ComboEndDate) && port.Free > port.Used && port.Activate == 1 {
+		// After combo flows end time, but have enough forever flows.
+		if !isRunning && now.After(port.ComboEndDate) && port.Forever+port.Extra > port.Used && port.Activate == 1 {
 			start(port.UserId, port.Port)
 		}
 
 		// Is running but have not enough flows.
-		if isRunning && port.Used >= port.ComboFlows+port.Free {
+		if isRunning && port.Used >= port.Combo+port.Forever+port.Extra {
 			// fmt.Printf("Stop user %d, port %d\n", port.UserId, port.Port)
 			stop(port.UserId)
 		}
 
 		// Is running but now is after combo end time.
-		if isRunning && now.After(port.ComboEndDate) && port.Free <= port.Used {
+		if isRunning && now.After(port.ComboEndDate) && port.Forever+port.Extra <= port.Used {
 			fmt.Printf("Combo is after the time,Stop user %d, port %d\n", port.UserId, port.Port)
 			stop(port.UserId)
 		}
