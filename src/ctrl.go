@@ -111,13 +111,11 @@ type Port struct {
 	NodeName     string
 	Port         uint16
 	UserId       uint64
-	Activate     int
 	Used         int
 	Forever      int
 	Combo        int
 	Extra        int
 	ComboEndDate time.Time
-	PortUpdateAt time.Time
 }
 
 func crtl() {
@@ -136,10 +134,10 @@ func getAndListenPorts() {
 	)
 
 	db.Table("ports").Select(
-		"node_name,`port`,ports.user_id,ports.updated_at as port_update_at,activate,used,forever,combo,extra,combo_end_date").Joins(
+		"node_name,`port`,ports.user_id,used,forever,combo,extra,combo_end_date").Joins(
 		"JOIN flows ON ports.user_id = flows.user_id JOIN users ON ports.user_id = users.id").Where(
 		" node_name = ?", config.NodeName,
-	).Find(&ports)
+	).Where("activate = 1").Find(&ports)
 
 	now := time.Now().In(loc)
 	for _, port := range ports {
@@ -153,13 +151,13 @@ func getAndListenPorts() {
 		_, isRunning := proxyManager.get(port.UserId)
 
 		// Not running and have enough flows.
-		if !isRunning && !now.After(port.ComboEndDate) && port.Combo+port.Forever+port.Extra > port.Used && port.Activate == 1 {
+		if !isRunning && !now.After(port.ComboEndDate) && port.Combo+port.Forever+port.Extra > port.Used {
 			// fmt.Printf("[Start] user %d, port %d, used: %d, flows: %d\n", port.UserId, port.Used, port.Combo, port.Forever)
 			start(port.UserId, port.Port)
 		}
 
-		// After combo flows end time, but have enough forever flows.
-		if !isRunning && now.After(port.ComboEndDate) && port.Forever+port.Extra > port.Used && port.Activate == 1 {
+		// After combo flows end time, but have enough flows.
+		if !isRunning && now.After(port.ComboEndDate) && port.Forever+port.Extra > port.Used {
 			start(port.UserId, port.Port)
 		}
 
@@ -170,7 +168,7 @@ func getAndListenPorts() {
 		}
 
 		// Is running but now is after combo end time.
-		if isRunning && now.After(port.ComboEndDate) && port.Forever+port.Extra <= port.Used {
+		if isRunning && now.After(port.ComboEndDate) && port.Forever <= port.Used {
 			fmt.Printf("Combo is after the time,Stop user %d, port %d\n", port.UserId, port.Port)
 			stop(port.UserId)
 		}
