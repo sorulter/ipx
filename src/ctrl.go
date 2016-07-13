@@ -17,7 +17,7 @@ type Proxy struct {
 }
 
 type ProxydManager struct {
-	sync.Mutex
+	sync.RWMutex
 	proxy map[uint64]*Proxy
 }
 
@@ -75,9 +75,9 @@ func (pm *ProxydManager) add(uid uint64, listener net.Listener, conn net.Conn) {
 }
 
 func (pm *ProxydManager) get(uid uint64) (prx *Proxy, ok bool) {
-	pm.Lock()
+	pm.RLock()
 	prx, ok = pm.proxy[uid]
-	pm.Unlock()
+	pm.RUnlock()
 	return
 }
 
@@ -91,9 +91,9 @@ func (pm *ProxydManager) del(uid uint64) {
 }
 
 func (pm *ProxydManager) clean(uids []uint64) {
-	pm.Lock()
-	defer pm.Unlock()
+	pm.RLock()
 	for id := range pm.proxy {
+		pm.RUnlock()
 		var hasid bool
 		for _, uid := range uids {
 			if uid == id {
@@ -103,7 +103,9 @@ func (pm *ProxydManager) clean(uids []uint64) {
 		if !hasid {
 			pm.del(id)
 		}
+		pm.RLock()
 	}
+	pm.RUnlock()
 
 }
 
