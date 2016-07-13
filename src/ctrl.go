@@ -171,7 +171,7 @@ func getAndListenPorts() {
 
 		// Is running but now is after combo end time.
 		if isRunning && now.After(port.ComboEndDate) && port.Forever <= port.Used {
-			fmt.Printf("Combo is after the time,Stop user %d, port %d\n", port.UserId, port.Port)
+			// fmt.Printf("Combo is after the time,Stop user %d, port %d\n", port.UserId, port.Port)
 			stop(port.UserId)
 		}
 	}
