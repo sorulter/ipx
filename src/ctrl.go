@@ -110,7 +110,6 @@ func (pm *ProxydManager) clean(uids []uint64) {
 }
 
 type Port struct {
-	NodeName     string
 	Port         uint16
 	UserId       uint64
 	Used         int
@@ -135,8 +134,7 @@ func getAndListenPorts() {
 		ids   []uint64
 	)
 
-	db.Table("ports").Select(
-		"node_name,`port`,ports.user_id,used,forever,combo,extra,combo_end_date").Joins(
+	db.Table("ports").Select("`port`,ports.user_id,used,forever,combo,extra,combo_end_date").Joins(
 		"JOIN flows ON ports.user_id = flows.user_id JOIN users ON ports.user_id = users.id").Where(
 		" node_name = ?", config.NodeName,
 	).Where("activate = 1").Find(&ports)
